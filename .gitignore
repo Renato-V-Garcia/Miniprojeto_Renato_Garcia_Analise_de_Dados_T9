@@ -1,0 +1,17 @@
+# Rascunhos pessoais (não versionar)
+rascunho/
+
+# Base de dados bruta (grande; baixar do Kaggle)
+base_dados/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Editor / sistema
+.vscode/
+.DS_Store
+Thumbs.db
