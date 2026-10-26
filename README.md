@@ -29,4 +29,4 @@ python Miniprojeto_Renato_Garcia_T9.py
 | `Mini_projeto.md` | enunciado |
 | `requirements.txt` | dependências |
 
-Autor: Renato Garcia
+Autor: Renato Villas Garcia
