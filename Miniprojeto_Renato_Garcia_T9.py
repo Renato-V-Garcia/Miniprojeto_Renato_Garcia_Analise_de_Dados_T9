@@ -7,10 +7,15 @@ import os
 import re
 from datetime import datetime
 
+import matplotlib
 import pandas as pd
+
+matplotlib.use("Agg")  # só grava arquivos, não abre janela
+import matplotlib.pyplot as plt
 
 CAMINHO_CSV = "base_dados/Base Varejo.csv"
 CAMINHO_SAIDA = "dados/df_limpo.csv"
+PASTA_GRAFICOS = "graficos"
 
 COLUNAS_TEXTO = ["CL_GENERO", "CL_SEG", "PR_CAT", "PR_NOME"]
 COLUNAS_INTEIRAS = ["CO_ID", "CL_ID", "CL_EC", "CL_FHL", "PR_ID"]
@@ -253,7 +258,53 @@ media_por_cliente = (itens_por_filhos / clientes_por_filhos).round(0)
 print("\nMédia de itens comprados por cliente, segundo o nº de filhos:")
 print(media_por_cliente.to_string())
 
-# --- 5.6 Relatório final -----------------------------------
+# --- 5.6 Gráficos ------------------------------------------
+os.makedirs(PASTA_GRAFICOS, exist_ok=True)
+
+# Gráfico 1: itens vendidos por categoria (barras horizontais)
+fig, ax = plt.subplots(figsize=(8, 4.5))
+ordenado = por_categoria.sort_values()
+ax.barh(ordenado.index, ordenado.values, color="#2a6f97")
+for i, valor in enumerate(ordenado.values):
+    ax.text(valor, i, f" {participacao[ordenado.index[i]]}%", va="center")
+ax.set_title("Itens vendidos por categoria")
+ax.set_xlabel("Itens vendidos")
+ax.set_xlim(0, ordenado.max() * 1.12)
+fig.tight_layout()
+fig.savefig(f"{PASTA_GRAFICOS}/itens_por_categoria.png", dpi=150)
+plt.close(fig)
+
+# Gráfico 2: vendas por mês (linha), destacando os meses com buraco
+fig, ax = plt.subplots(figsize=(10, 4.5))
+datas_mes = por_mes.index.to_timestamp()
+ax.plot(datas_mes, por_mes.values, color="#2a6f97")
+ax.scatter(piores_meses.index.to_timestamp(), piores_meses.values, color="#d62828", zorder=3)
+ax.annotate("queda em set/out de 2022", xy=(piores_meses.index[0].to_timestamp(), piores_meses.iloc[0]),
+            xytext=(-150, 30), textcoords="offset points", color="#d62828",
+            arrowprops={"arrowstyle": "->", "color": "#d62828"})
+ax.set_title("Itens vendidos por mês")
+ax.set_ylabel("Itens vendidos")
+ax.set_ylim(bottom=0)
+fig.tight_layout()
+fig.savefig(f"{PASTA_GRAFICOS}/vendas_por_mes.png", dpi=150)
+plt.close(fig)
+
+# Gráfico 3: clientes por número de filhos (barras), com média e mediana
+fig, ax = plt.subplots(figsize=(8, 4.5))
+ax.bar(dist_filhos.index, dist_filhos.values, color="#2a6f97")
+ax.axvline(filhos.mean(), color="#d62828", linestyle="--", label=f"média = {filhos.mean():.2f}")
+ax.axvline(filhos.median(), color="#333333", linestyle=":", label=f"mediana = {filhos.median():.0f}")
+ax.set_title("Clientes por número de filhos")
+ax.set_xlabel("Número de filhos")
+ax.set_ylabel("Clientes")
+ax.set_xticks(dist_filhos.index)
+ax.legend()
+fig.tight_layout()
+fig.savefig(f"{PASTA_GRAFICOS}/clientes_por_filhos.png", dpi=150)
+plt.close(fig)
+print(f"\nGráficos salvos em: {PASTA_GRAFICOS}/")
+
+# --- 5.7 Relatório final -----------------------------------
 titulo("RELATÓRIO FINAL")
 total_itens = int(df_limpo["quantidade"].sum())
 print(f"Linhas originais:          {len(df)}")
