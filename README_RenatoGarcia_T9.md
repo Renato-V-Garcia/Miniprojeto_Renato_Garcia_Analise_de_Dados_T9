@@ -74,3 +74,8 @@ Trata-se de um projeto de aprendizado.
     - Dado ruim leva a conclusão ruim. Se eu tivesse apagado as linhas repetidas sem investigar, teria jogado fora 96.553 itens vendidos e subestimado todas as contagens.
     - Qualidade de dados é decidir com critério: antes de remover ou preencher qualquer valor, testar a hipótese e registrar a escolha (por exemplo, "#N/D" virou um rótulo explícito, e não um valor inventado).
     - Nem tudo se resolve na limpeza. A queda de set/out de 2022 e a ausência de preço são limites da fonte e precisam ser informados junto com os resultados.
+
+# Observação sobre os nulos
+
+    - O enunciado cita "dimensões físicas", mas a base Varejo não possui colunas de peso, altura ou largura. Os únicos nulos encontrados foram categoria e nome do produto (escritos como "#N/D"), tratados na Sprint 3 com os rótulos "SEM CATEGORIA" e "PRODUTO NAO IDENTIFICADO" (escritos em maiúsculas por causa da padronização de texto da Sprint 2).
+    - As demais colunas não têm nulos, e isso foi verificado com isna() e com a busca por "#N/D".
