@@ -174,3 +174,109 @@ print(f"Base limpa salva em: {CAMINHO_SAIDA}")
 
 # ==========================================================
 # SPRINT 4: Estatística descritiva (número de filhos - CL_FHL)
+# ==========================================================
+titulo("SPRINT 4 - Estatística descritiva do número de filhos")
+
+# CL_FHL é um atributo do cliente, não da compra. Se usássemos as linhas da base,
+# quem compra mais itens pesaria mais. Por isso olhamos um registro por cliente.
+clientes = df_limpo.drop_duplicates(subset="CL_ID")
+filhos = clientes["CL_FHL"].astype(int)
+print(f"Clientes únicos: {len(filhos)}")
+
+print(f"Contagem:      {filhos.count()}")
+print(f"Média:         {filhos.mean():.2f}")
+print(f"Mediana:       {filhos.median():.1f}")
+print(f"Desvio padrão: {filhos.std():.2f}")
+print(f"Moda:          {filhos.mode().tolist()}")
+print(f"Mínimo:        {filhos.min()}")
+print(f"Máximo:        {filhos.max()}")
+print(f"Quartis:       Q1={filhos.quantile(0.25):.1f} | Q2={filhos.quantile(0.50):.1f} "
+      f"| Q3={filhos.quantile(0.75):.1f}")
+
+print("\nResumo do describe():")
+print(filhos.describe().round(2).to_string())
+
+print("\nClientes por número de filhos:")
+dist_filhos = filhos.value_counts().sort_index()
+print(pd.DataFrame({"clientes": dist_filhos, "%": (dist_filhos / len(filhos) * 100).round(1)}))
+
+
+# ==========================================================
+# SPRINT 5: Agrupamentos, relatório e conclusões
+# ==========================================================
+titulo("SPRINT 5 - Agrupamentos e relatório final")
+
+# Cada linha de df_limpo representa 'quantidade' itens vendidos,
+# então as vendas são a soma de 'quantidade' (e não a contagem de linhas).
+
+# --- 5.1 Vendas por gênero ---------------------------------
+por_genero = df_limpo.groupby("CL_GENERO").agg(
+    itens=("quantidade", "sum"),
+    compras=("CO_ID", "nunique"),
+    clientes=("CL_ID", "nunique"),
+)
+por_genero["itens_por_compra"] = (por_genero["itens"] / por_genero["compras"]).round(1)
+print("Vendas por gênero:")
+print(por_genero)
+
+# --- 5.2 Vendas por categoria ------------------------------
+por_categoria = df_limpo.groupby("PR_CAT")["quantidade"].sum().sort_values(ascending=False)
+participacao = (por_categoria / por_categoria.sum() * 100).round(1)
+print("\nItens vendidos por categoria:")
+print(pd.DataFrame({"itens": por_categoria, "%": participacao}))
+
+# --- 5.3 Categoria x gênero (pivot_table) ------------------
+cat_genero = pd.pivot_table(
+    df_limpo, index="PR_CAT", columns="CL_GENERO",
+    values="quantidade", aggfunc="sum",
+)
+print("\nItens por categoria e gênero:")
+print(cat_genero)
+
+# --- 5.4 Evolução por ano ----------------------------------
+por_ano = df_limpo.groupby(df_limpo["DATA"].dt.year).agg(
+    itens=("quantidade", "sum"), compras=("CO_ID", "nunique"),
+)
+print("\nVendas por ano:")
+print(por_ano)
+
+# Meses mais fracos: ajuda a achar buracos na base
+por_mes = df_limpo.groupby(df_limpo["DATA"].dt.to_period("M"))["quantidade"].sum()
+piores_meses = por_mes.nsmallest(2).sort_index()
+print("\nMeses com menos vendas:")
+print(piores_meses.to_string())
+
+# --- 5.5 Perfil de compra por número de filhos -------------
+itens_por_filhos = df_limpo.groupby("CL_FHL")["quantidade"].sum()
+clientes_por_filhos = clientes.groupby("CL_FHL")["CL_ID"].count()
+media_por_cliente = (itens_por_filhos / clientes_por_filhos).round(0)
+print("\nMédia de itens comprados por cliente, segundo o nº de filhos:")
+print(media_por_cliente.to_string())
+
+# --- 5.6 Relatório final -----------------------------------
+titulo("RELATÓRIO FINAL")
+total_itens = int(df_limpo["quantidade"].sum())
+print(f"Linhas originais:          {len(df)}")
+print(f"Linhas após consolidação:  {len(df_limpo)}")
+print(f"Itens vendidos:            {total_itens}")
+print(f"Compras (notas):           {df_limpo['CO_ID'].nunique()}")
+print(f"Clientes:                  {len(clientes)}")
+print(f"Produtos distintos:        {df_limpo['PR_ID'].nunique()}")
+print(f"Período:                   {df_limpo['DATA'].min():%d/%m/%Y} a {df_limpo['DATA'].max():%d/%m/%Y}")
+
+genero_top = por_genero["itens"].idxmax()
+print("\nCONCLUSÕES")
+print(f"1. {por_categoria.index[0]} lidera as vendas com {participacao.iloc[0]}% dos itens; "
+      f"{por_categoria.index[1]} e {por_categoria.index[2]} vêm em seguida.")
+print(f"2. O gênero {genero_top} compra mais ({por_genero.loc[genero_top, 'itens']} itens), "
+      "mas a diferença para o outro gênero é pequena.")
+print(f"3. {(filhos == 0).mean() * 100:.0f}% dos clientes não têm filhos "
+      f"(moda = {filhos.mode().iloc[0]}), mas a média é {filhos.mean():.2f} por causa da cauda até {filhos.max()}.")
+print(f"4. {por_ano['itens'].idxmax()} foi o ano de maior venda; em {piores_meses.index[0]} e "
+      f"{piores_meses.index[1]} as vendas despencam ({piores_meses.iloc[0]} e {piores_meses.iloc[1]} itens), "
+      "o que sugere lacuna de dados.")
+sem_cat = por_categoria.get("SEM CATEGORIA", 0)
+print(f"5. Problema remanescente: {sem_cat} itens ({sem_cat / total_itens * 100:.1f}%) "
+      "seguem sem categoria (produto PR_ID 107).")
+print("6. A base não tem quantidade nem valor: 'quantidade' foi inferida das linhas "
+      "repetidas, então não dá para medir faturamento.")
