@@ -49,6 +49,16 @@ Trata-se de um projeto de aprendizado.
 
     - Sprint 5: agrupamentos com groupby e pivot_table (gênero, categoria, categoria x gênero, ano e número de filhos) e relatório final no terminal.
 
+# Décimo Passo:
+
+    - Gráficos com matplotlib (salvos em graficos/ ao rodar o script), para mostrar os principais achados.
+
+![Itens vendidos por categoria](graficos/itens_por_categoria.png)
+
+![Itens vendidos por mês](graficos/vendas_por_mes.png)
+
+![Clientes por número de filhos](graficos/clientes_por_filhos.png)
+
 # Como executar
 
     - Coloque o arquivo "Base Varejo.csv" na pasta base_dados/ (baixado do Kaggle).

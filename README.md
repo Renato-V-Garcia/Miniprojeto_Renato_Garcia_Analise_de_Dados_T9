@@ -24,6 +24,7 @@ python Miniprojeto_Renato_Garcia_T9.py
 |---|---|
 | `Miniprojeto_Renato_Garcia_T9.py` | script da análise, dividido em sprints |
 | `dados/df_limpo.csv` | base limpa gerada pelo script |
+| `graficos/` | gráficos gerados pelo script (categorias, vendas por mês, filhos) |
 | `README_RenatoGarcia_T9.md` | passo a passo, insights e reflexão sobre ETL e qualidade de dados |
 | `Mini_projeto.md` | enunciado |
 | `requirements.txt` | dependências |
